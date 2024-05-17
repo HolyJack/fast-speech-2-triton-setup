@@ -36,7 +36,7 @@ Create docker triton image
 docker build -t fast-speech-triton .
 ```
 
-Create a container
+Create a container (only http port exposed)
 ```
 docker run -d -v ./models_repository:/models --name test-fast-speech-triton -p 8000:8000 fast-speech-triton
 ```

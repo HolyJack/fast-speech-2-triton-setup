@@ -15,6 +15,7 @@ Unpack archives from ./FastSpeech2/FastSpeech2/hifigan
 cd ./FastSpeech2/FastSpeech2/hifigan
 tar -xf generator_LJSpeech.pth.tar.zip
 tar -xf generator_universal.pth.tar.zip
+cd -
 ```
 
 Create Fastspeech2 package
@@ -22,7 +23,7 @@ Create Fastspeech2 package
 cd FastSpeech2
 python setup.py sdist bdist_wheel
 pip install .
-cd .. 
+cd -
 ```
 
 Test FastSpeech2

@@ -1,0 +1,31 @@
+backend: "python"
+max_batch_size: 8
+input [
+{
+    name: "text"
+    data_type: TYPE_STRING
+    dims: [1]
+}
+]
+output [
+  {
+    name: "speakers"
+    data_type: TYPE_INT64
+    dims: [ 1 ]
+  },
+  {
+    name: "texts"
+    data_type: TYPE_INT64
+    dims: [ 1, -1 ]
+  },
+  {
+    name: "text_lens"
+    data_type: TYPE_INT64
+    dims: [ 1 ]
+  },
+  {
+    name: "max_text_lens"
+    data_type: TYPE_INT64
+    dims: [ 1 ]
+  }
+]

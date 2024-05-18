@@ -7,6 +7,7 @@ attrs==23.2.0
 bidict==0.23.1
 Brotli==1.1.0
 certifi==2024.2.2
+cffi==1.16.0
 charset-normalizer==3.3.2
 click==8.1.7
 coloredlogs==14.0
@@ -17,6 +18,7 @@ dnspython==2.3.0
 editdistance==0.8.1
 et-xmlfile==1.1.0
 eventlet==0.36.1
+FastSpeech2 @ file:///Users/holyjack/Projects/Personal/fast_speech_triton/FastSpeech2
 filelock==3.14.0
 Flask==2.2.5
 Flask-Cors==4.0.1
@@ -53,6 +55,7 @@ openpyxl==3.1.2
 packaging==24.0
 panphon==0.20.0
 pillow==10.3.0
+pycparser==2.22
 pydantic==2.7.1
 pydantic_core==2.18.2
 pyparsing==3.1.2
@@ -68,6 +71,7 @@ requests==2.31.0
 scipy==1.13.0
 simple-websocket==1.0.0
 six==1.16.0
+sounddevice==0.4.6
 sympy==1.12
 text-unidecode==1.3
 torch==2.3.0

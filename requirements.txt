@@ -18,7 +18,6 @@ dnspython==2.3.0
 editdistance==0.8.1
 et-xmlfile==1.1.0
 eventlet==0.36.1
-FastSpeech2 @ file:///Users/holyjack/Projects/Personal/fast_speech_triton/FastSpeech2
 filelock==3.14.0
 Flask==2.2.5
 Flask-Cors==4.0.1

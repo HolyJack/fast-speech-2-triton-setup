@@ -1,8 +1,13 @@
 import triton_python_backend_utils as pb_utils
-import numpy as np
 import json
 import yaml
-from FastSpeech2.synthesize import preprocess_english
+from FastSpeech2.utils.model import get_vocoder, vocoder_infer
+import torch
+import numpy as np
+import torch
+
+
+device = torch.device("cpu")
 
 
 class TritonPythonModel:
@@ -13,32 +18,22 @@ class TritonPythonModel:
         self.model_config = model_config = json.loads(args["model_config"])
 
         # Get OUTPUTS configuration
-        speakers_config = pb_utils.get_output_config_by_name(model_config, "speakers")
-        texts_config = pb_utils.get_output_config_by_name(model_config, "texts")
-        text_lens_config = pb_utils.get_output_config_by_name(model_config, "text_lens")
-        max_text_lens_config = pb_utils.get_output_config_by_name(
-            model_config, "max_text_lens"
+        wav_predictions = pb_utils.get_output_config_by_name(
+            model_config, "wav_predictions"
         )
 
         # Convert Triton types to numpy types
         self.speakers_dtype = pb_utils.triton_string_to_numpy(
-            speakers_config["data_type"]
-        )
-        self.texts_dtype = pb_utils.triton_string_to_numpy(texts_config["data_type"])
-        self.text_lens_dtype = pb_utils.triton_string_to_numpy(
-            text_lens_config["data_type"]
-        )
-        self.max_text_lens_dtype = pb_utils.triton_string_to_numpy(
-            max_text_lens_config["data_type"]
+            wav_predictions["data_type"]
         )
         # Load configs
+        self.model_config = yaml.load(open("/model.yaml", "r"), Loader=yaml.FullLoader)
         self.preprocess_config = yaml.load(
             open("/preprocess.yaml", "r"), Loader=yaml.FullLoader
         )
 
-        self.speakers = np.array([0])
         # Instantiate the PyTorch model
-        # --------- no model ----------
+        self.vocoder = get_vocoder(self.model_config, device)
 
     def execute(self, requests):
 
@@ -48,21 +43,27 @@ class TritonPythonModel:
         # and create a pb_utils.InferenceResponse for each of them.
         for request in requests:
             # Get Inputs
-            text_data = pb_utils.get_input_tensor_by_name(request, "text")
-            text = text_data.as_numpy()[0][0].decode("utf-8")
-            print(text, flush=True)
-
-            # Preprocessing english
-            speakers = self.speakers
-            texts = np.array([preprocess_english(text, self.preprocess_config)])
-            text_lens = np.array([len(texts[0])])
-            max_text_lens = np.array([max(text_lens)])
+            mel_predictions = torch.from_numpy(
+                pb_utils.get_input_tensor_by_name(request, "postnet_output").as_numpy()
+            ).transpose(1, 2)
+            lengths = (
+                torch.from_numpy(
+                    pb_utils.get_input_tensor_by_name(request, "mel_lens").as_numpy()
+                )
+                * self.preprocess_config["preprocessing"]["stft"]["hop_length"]
+            )
+            # prediction
+            wav_predictions = vocoder_infer(
+                mel_predictions,
+                self.vocoder,
+                self.model_config,
+                self.preprocess_config,
+                lengths=lengths,
+            )
+            wav_predictions = np.asarray(wav_predictions, dtype=np.int16)
             # Create output tensors. You need pb_utils.Tensor
             # objects to create pb_utils.InferenceResponse.
-            speakers_tensor = pb_utils.Tensor("speakers", speakers)
-            texts_tensor = pb_utils.Tensor("texts", texts)
-            text_lens_tensor = pb_utils.Tensor("text_lens", text_lens)
-            max_text_lens_tensor = pb_utils.Tensor("max_text_lens", max_text_lens)
+            wav_predictions_tensor = pb_utils.Tensor("wav_predictions", wav_predictions)
             # Create InferenceResponse. You can set an error here in case
             # there was a problem with handling this inference request.
             # Below is an example of how you can set errors in inference
@@ -72,13 +73,9 @@ class TritonPythonModel:
             #    output_tensors=..., TritonError("An error occurred"))
             inference_response = pb_utils.InferenceResponse(
                 output_tensors=[
-                    speakers_tensor,
-                    texts_tensor,
-                    text_lens_tensor,
-                    max_text_lens_tensor,
+                    wav_predictions_tensor,
                 ]
             )
-            print("All good x 3", flush=True)
             responses.append(inference_response)
 
         # You should return a list of pb_utils.InferenceResponse. Length

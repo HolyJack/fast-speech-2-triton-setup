@@ -1,63 +1,49 @@
 import tritonclient.http as httpclient
 import numpy as np
-import torch
-from FastSpeech2.utils.model import get_vocoder
-from FastSpeech2.utils.tools import synth_samples
-import yaml
 import os
 import time
-from tritonclient.utils import *
+import sounddevice
+from scipy.io import wavfile
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def main():
-    text = "Chipi chipi chapa chapa"
+    text = [
+        "Chipi chipi, chapa chapa",
+        "Dubidubi, dabadaba",
+        "Magico mi dubidubi boom, boom, boom, boom",
+        "Chipi chipi, chapa chapa",
+        "Dubidubi, dabadaba",
+        "Magico mi dubidubi boom",
+    ]
 
+    # Creating httpclient
     client = httpclient.InferenceServerClient(url="localhost:8000")
 
+    for line in text:
+        send_request(client, line)
+
+
+def send_request(client, text):
     np_text_data = np.asarray([text], dtype=object)
     input_text = httpclient.InferInput("text", [1], "BYTES")
     input_text.set_data_from_numpy(np_text_data.reshape([1]))
 
+    start = time.time()
     fast_speech2_ensemble_responce = client.infer(
         model_name="ensemble_model_english", inputs=[input_text]
     )
-    output_names = [
-        "output",
-        "postnet_output",
-        "p_predictions",
-        "e_predictions",
-        "log_d_predictions",
-        "d_rounded",
-        "src_masks",
-        "mel_masks",
-        "src_lens",
-        "mel_lens",
-    ]
+    end = time.time()
+    print("Time taken:", end - start)
+    wav_predictions = fast_speech2_ensemble_responce.as_numpy("wav_predictions")
+    # from preprocessing config
+    sampling_rate = 22050
 
-    outputs = []
-    for name in output_names:
-        outputs.append(torch.from_numpy(fast_speech2_ensemble_responce.as_numpy(name)))
-    output = tuple(outputs)
-
-    device = torch.device("cpu")
-    model_config = yaml.load(open("model.yaml", "r"), Loader=yaml.FullLoader)
-    preprocess_config = yaml.load(open("preprocess.yaml", "r"), Loader=yaml.FullLoader)
-    vocoder = get_vocoder(model_config, device)
-    synth_samples(
-        [text],
-        output,
-        vocoder,
-        model_config,
-        preprocess_config,
-        os.path.join(ROOT_DIR, "output/"),
-    )
+    for i, wav in enumerate(wav_predictions):
+        sounddevice.play(wav, sampling_rate)
+        wavfile.write(f"output/{text}_{i}.wav", sampling_rate, wav)
 
 
 if __name__ == "__main__":
-    start = time.time()
     main()
-    end = time.time()
-
-    print("Time taken:", end - start)

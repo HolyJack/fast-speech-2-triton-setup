@@ -1,2 +1,9 @@
 800000.pbt.tar
 **/__pycache__/**
+FastSpeech2/FastSpeech2/hifigan/*.pbt.tar
+output/*.png
+output/*.wav
+FastSpeech2/build/**
+FastSpeech2/dist/**
+FastSpeech2/FastSpeech2.egg-info/**
+.eggs/**

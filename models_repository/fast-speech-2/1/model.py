@@ -122,7 +122,6 @@ class TritonPythonModel:
             max_text_lens = pb_utils.get_input_tensor_by_name(
                 request, "max_text_lens"
             ).as_numpy()[0]
-            print("fast-speech-2 received data and processed it", flush=True)
 
             with torch.no_grad():
                 (
@@ -137,7 +136,6 @@ class TritonPythonModel:
                     src_lens,
                     mel_lens,
                 ) = self.model(speakers, texts, text_lens, max_text_lens)
-            print("fast-speech-2 run model inference with success", flush=True)
             # Create output tensors. You need pb_utils.Tensor
             # objects to create pb_utils.InferenceResponse.
             output_tensor = pb_utils.Tensor("output", np.array(output))

@@ -18,13 +18,6 @@ cd -
 mv ./FastSpeech2/FastSpeech2/hifigan/generator_universal.pth.tar ./models_repository/hifigan_vocoder/
 ```
 
-Create Fastspeech2 package
-```
-cd FastSpeech2
-python setup.py sdist bdist_wheel
-cd -
-```
-
 Create a triton inference server image and container
 ```
 docker compose up -d

@@ -10,12 +10,9 @@ Download LibriTTS weights from [link](https://drive.google.com/drive/folders/1DO
 mv LibriTTS_800000.pth.tar ./models_repository/fast-speech-2/
 ```
 
-Unpack archives from ./FastSpeech2/FastSpeech2/hifigan
+Unpack archives from ./models_repository/hifigan_vocoder
 ```bash
-cd ./FastSpeech2/FastSpeech2/hifigan
-tar -xf generator_universal.pth.tar.zip
-cd -
-mv ./FastSpeech2/FastSpeech2/hifigan/generator_universal.pth.tar ./models_repository/hifigan_vocoder/
+tar -xf ./models_repository/hifigan_vocoder/generator_universal.pth.tar.zip
 ```
 
 Create a triton inference server image and container

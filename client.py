@@ -1,7 +1,7 @@
-import tritonclient.http as httpclient
-import numpy as np
 import os
 import time
+import tritonclient.http as httpclient
+import numpy as np
 import sounddevice
 from scipy.io import wavfile
 

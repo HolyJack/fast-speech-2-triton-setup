@@ -14,8 +14,8 @@ from FastSpeech2.utils.model import get_model, get_vocoder
 from FastSpeech2.utils.tools import synth_samples, to_device
 import os
 
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 

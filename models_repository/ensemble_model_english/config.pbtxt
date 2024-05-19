@@ -69,7 +69,7 @@ ensemble_scheduling {
       }
     },
     {
-      model_name: "synth_sample"
+      model_name: "hifigan_vocoder"
       model_version: -1
       input_map {
         key: "postnet_output"

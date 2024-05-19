@@ -3,6 +3,7 @@ import numpy as np
 import json
 import yaml
 from FastSpeech2.synthesize import preprocess_english
+import os
 
 
 class TritonPythonModel:
@@ -32,10 +33,12 @@ class TritonPythonModel:
             max_text_lens_config["data_type"]
         )
         # Load configs
+        path = args["model_repository"]
         self.preprocess_config = yaml.load(
-            open("/preprocess.yaml", "r"), Loader=yaml.FullLoader
+            open(os.path.join(path, "preprocess.yaml"), "r"), Loader=yaml.FullLoader
         )
 
+        # default speakers
         self.speakers = np.array([0])
         # Instantiate the PyTorch model
         # --------- no model ----------

@@ -2,34 +2,17 @@ import triton_python_backend_utils as pb_utils
 import numpy as np
 import json
 import yaml
-from FastSpeech2.model import FastSpeech2
 import torch
+import os
+from FastSpeech2.model import FastSpeech2
 
 
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class TritonPythonModel:
-    """Your Python model must use the same class name. Every Python model
-    that is created must have "TritonPythonModel" as the class name.
-    """
 
     def initialize(self, args):
-        """`initialize` is called only once when the model is being loaded.
-        Implementing `initialize` function is optional. This function allows
-        the model to initialize any state associated with this model.
-
-        Parameters
-        ----------
-        args : dict
-          Both keys and values are strings. The dictionary keys and values are:
-          * model_config: A JSON string containing the model configuration
-          * model_instance_kind: A string containing model instance kind
-          * model_instance_device_id: A string containing model instance device ID
-          * model_repository: Model repository path
-          * model_version: Model version
-          * model_name: Model name
-        """
 
         # You must parse model_config. JSON string is not parsed here
         self.model_config = model_config = json.loads(args["model_config"])
@@ -87,17 +70,21 @@ class TritonPythonModel:
         )
 
         # Load configs
+        path = args["model_repository"]
         preprocess_config = yaml.load(
-            open("/preprocess.yaml", "r"), Loader=yaml.FullLoader
+            open(os.path.join(path, "preprocess.yaml"), "r"), Loader=yaml.FullLoader
         )
-        model_config = yaml.load(open("/model.yaml", "r"), Loader=yaml.FullLoader)
+        model_config = yaml.load(
+            open(os.path.join(path, "model.yaml"), "r"), Loader=yaml.FullLoader
+        )
 
         # Instantiate the PyTorch model
         self.model = FastSpeech2(
             preprocess_config=preprocess_config, model_config=model_config
         )
-        ckpt_path = "/800000.pth.tar"
-        ckpt = torch.load(ckpt_path, map_location=device)
+        ckpt = torch.load(
+            os.path.join(path, "LibriTTS_800000.pth.tar"), map_location=device
+        )
         self.model.load_state_dict(ckpt["model"])
         self.model.eval()
         self.model.requires_grad_ = False

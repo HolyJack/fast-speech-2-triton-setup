@@ -1,13 +1,14 @@
 import triton_python_backend_utils as pb_utils
 import json
 import yaml
-from FastSpeech2.utils.model import get_vocoder, vocoder_infer
+import FastSpeech2.hifigan as hifigan
 import torch
 import numpy as np
-import torch
+import os
 
 
-device = torch.device("cpu")
+# device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class TritonPythonModel:
@@ -27,13 +28,25 @@ class TritonPythonModel:
             wav_predictions["data_type"]
         )
         # Load configs
-        self.model_config = yaml.load(open("/model.yaml", "r"), Loader=yaml.FullLoader)
+        path = args["model_repository"]
         self.preprocess_config = yaml.load(
-            open("/preprocess.yaml", "r"), Loader=yaml.FullLoader
+            open(os.path.join(path, "preprocess.yaml"), "r"), Loader=yaml.FullLoader
         )
+        with open(os.path.join(path, "config.json"), "r") as f:
+            config = json.load(f)
+        config = hifigan.AttrDict(config)
 
         # Instantiate the PyTorch model
-        self.vocoder = get_vocoder(self.model_config, device)
+        # self.vocoder = get_vocoder(self.model_config, device)
+        self.vocoder = hifigan.Generator(config)
+        ckpt = torch.load(
+            os.path.join(path, "generator_universal.pth.tar"),
+            map_location=device,
+        )
+        self.vocoder.load_state_dict(ckpt["generator"])
+        self.vocoder.eval()
+        self.vocoder.remove_weight_norm()
+        self.vocoder.to(device)
 
     def execute(self, requests):
 
@@ -52,15 +65,23 @@ class TritonPythonModel:
                 )
                 * self.preprocess_config["preprocessing"]["stft"]["hop_length"]
             )
-            # prediction
-            wav_predictions = vocoder_infer(
-                mel_predictions,
-                self.vocoder,
-                self.model_config,
-                self.preprocess_config,
-                lengths=lengths,
-            )
-            wav_predictions = np.asarray(wav_predictions, dtype=np.int16)
+
+            # Prediction
+            with torch.no_grad():
+                wavs = self.vocoder(mel_predictions).squeeze(1)
+
+            wavs = (
+                wavs.cpu().numpy()
+                * self.preprocess_config["preprocessing"]["audio"]["max_wav_value"]
+            ).astype("int16")
+
+            wavs = [wav for wav in wavs]
+
+            for i in range(len(mel_predictions)):
+                if lengths is not None:
+                    wavs[i] = wavs[i][: lengths[i]]
+
+            wav_predictions = np.asarray(wavs, dtype=np.int16)
             # Create output tensors. You need pb_utils.Tensor
             # objects to create pb_utils.InferenceResponse.
             wav_predictions_tensor = pb_utils.Tensor("wav_predictions", wav_predictions)

@@ -5,13 +5,13 @@ from string import punctuation
 import numpy as np
 import torch
 import yaml
-from FastSpeech2.dataset import TextDataset
 from g2p_en import G2p
 from pypinyin import Style, pinyin
 from FastSpeech2.text import text_to_sequence
 from torch.utils.data import DataLoader
 from FastSpeech2.utils.model import get_model, get_vocoder
 from FastSpeech2.utils.tools import synth_samples, to_device
+from FastSpeech2.dataset import TextDataset
 import os
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,7 +22,7 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def read_lexicon(lex_path):
     lexicon = {}
-    with open(os.path.join(ROOT_DIR, lex_path)) as f:
+    with open(lex_path) as f:
         for line in f:
             temp = re.split(r"\s+", line.strip("\n"))
             word = temp[0]
@@ -34,7 +34,9 @@ def read_lexicon(lex_path):
 
 def preprocess_english(text, preprocess_config):
     text = text.rstrip(punctuation)
-    lexicon = read_lexicon(preprocess_config["path"]["lexicon_path"])
+    lexicon = read_lexicon(
+        os.path.join(ROOT_DIR, preprocess_config["path"]["lexicon_path"])
+    )
 
     g2p = G2p()
     phones = []
@@ -48,8 +50,6 @@ def preprocess_english(text, preprocess_config):
     phones = re.sub(r"\{[^\w\s]?\}", "{sp}", phones)
     phones = phones.replace("}{", " ")
 
-    print("Raw Text Sequence: {}".format(text))
-    print("Phoneme Sequence: {}".format(phones))
     sequence = np.array(
         text_to_sequence(
             phones, preprocess_config["preprocessing"]["text"]["text_cleaners"]

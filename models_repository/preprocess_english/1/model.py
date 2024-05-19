@@ -2,8 +2,8 @@ import triton_python_backend_utils as pb_utils
 import numpy as np
 import json
 import yaml
-from FastSpeech2.synthesize import preprocess_english
 import os
+from data.preprocess_english import preprocess_english
 
 
 class TritonPythonModel:
@@ -12,6 +12,12 @@ class TritonPythonModel:
 
         # You must parse model_config. JSON string is not parsed here
         self.model_config = model_config = json.loads(args["model_config"])
+        repository = args["model_repository"]
+        version = args["model_version"]
+        self.data_path = os.path.join(repository, version, "data")
+        self.lexicon_path = os.path.join(
+            self.data_path, "lexicon/librispeech-lexicon.txt"
+        )
 
         # Get OUTPUTS configuration
         speakers_config = pb_utils.get_output_config_by_name(model_config, "speakers")
@@ -33,9 +39,9 @@ class TritonPythonModel:
             max_text_lens_config["data_type"]
         )
         # Load configs
-        path = args["model_repository"]
         self.preprocess_config = yaml.load(
-            open(os.path.join(path, "preprocess.yaml"), "r"), Loader=yaml.FullLoader
+            open(os.path.join(self.data_path, "preprocess.yaml"), "r"),
+            Loader=yaml.FullLoader,
         )
 
         # default speakers
@@ -53,11 +59,11 @@ class TritonPythonModel:
             # Get Inputs
             text_data = pb_utils.get_input_tensor_by_name(request, "text")
             text = text_data.as_numpy()[0][0].decode("utf-8")
-            print(text, flush=True)
-
             # Preprocessing english
             speakers = self.speakers
-            texts = np.array([preprocess_english(text, self.preprocess_config)])
+            texts = np.array(
+                [preprocess_english(text, self.preprocess_config, self.lexicon_path)]
+            )
             text_lens = np.array([len(texts[0])])
             max_text_lens = np.array([max(text_lens)])
             # Create output tensors. You need pb_utils.Tensor
@@ -81,7 +87,6 @@ class TritonPythonModel:
                     max_text_lens_tensor,
                 ]
             )
-            print("All good x 3", flush=True)
             responses.append(inference_response)
 
         # You should return a list of pb_utils.InferenceResponse. Length

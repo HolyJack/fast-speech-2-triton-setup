@@ -9,9 +9,7 @@ setup(
     package_data={
         "FastSpeech2": [
             "configs/**/*.yaml",
-            "hifigan/**",
             "preprocessed_data/**/*",
-            "output/**/**/*.tar",
             "lexicon/**",
         ]
     },

@@ -17,6 +17,9 @@ class TritonPythonModel:
 
         # You must parse model_config. JSON string is not parsed here
         self.model_config = model_config = json.loads(args["model_config"])
+        repository = args["model_repository"]
+        version = args["model_version"]
+        path = os.path.join(repository, version, "data")
 
         # Get OUTPUTS configuration
         wav_predictions = pb_utils.get_output_config_by_name(
@@ -28,9 +31,9 @@ class TritonPythonModel:
             wav_predictions["data_type"]
         )
         # Load configs
-        path = args["model_repository"]
         self.preprocess_config = yaml.load(
-            open(os.path.join(path, "preprocess.yaml"), "r"), Loader=yaml.FullLoader
+            open(os.path.join(path, "preprocess.yaml"), "r"),
+            Loader=yaml.FullLoader,
         )
         with open(os.path.join(path, "config.json"), "r") as f:
             config = json.load(f)

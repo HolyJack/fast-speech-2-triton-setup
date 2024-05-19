@@ -2,10 +2,10 @@ import json
 import os
 
 import torch.nn as nn
-from FastSpeech2.transformer import Decoder, Encoder, PostNet
-from FastSpeech2.utils.tools import get_mask_from_lengths
+from ..transformer import Decoder, Encoder, PostNet
+from ..utils.tools import get_mask_from_lengths
 
-from FastSpeech2.model.modules import VarianceAdaptor
+from .modules import VarianceAdaptor
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 

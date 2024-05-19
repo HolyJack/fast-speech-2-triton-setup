@@ -1,10 +1,18 @@
 services: 
-  triton:
+  triton-inference-server:
     build: .
+    networks:
+      - triton-network
     ports:
       - 8000:8000
       - 8001:8001
       - 8002:8002
     volumes:
       - ./models_repository:/models
-
+  perf-analyzer:
+    image: nvcr.io/nvidia/tritonserver:24.04-py3-sdk
+    networks:
+      - triton-network
+    entrypoint: sleep infinity
+networks:
+  triton-network:

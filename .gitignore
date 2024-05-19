@@ -6,5 +6,4 @@ FastSpeech2/build/**
 FastSpeech2/dist/**
 FastSpeech2/FastSpeech2.egg-info/**
 FastSpeech2/.eggs/**
-models_repository/fast-speech-2/LibriTTS_800000.pth.tar
 **.pth.tar

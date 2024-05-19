@@ -17,6 +17,9 @@ class TritonPythonModel:
         # You must parse model_config. JSON string is not parsed here
         self.model_config = model_config = json.loads(args["model_config"])
 
+        repository = args["model_repository"]
+        version = args["model_version"]
+        path = os.path.join(repository, version, "data")
         # Get OUTPUTS configuration
 
         output_config = pb_utils.get_output_config_by_name(model_config, "output")
@@ -70,7 +73,6 @@ class TritonPythonModel:
         )
 
         # Load configs
-        path = args["model_repository"]
         preprocess_config = yaml.load(
             open(os.path.join(path, "preprocess.yaml"), "r"), Loader=yaml.FullLoader
         )
@@ -143,9 +145,6 @@ class TritonPythonModel:
             mel_masks_tensor = pb_utils.Tensor("mel_masks", np.array(mel_masks))
             src_lens_tensor = pb_utils.Tensor("src_lens", np.array(src_lens))
             mel_lens_tensor = pb_utils.Tensor("mel_lens", np.array(mel_lens))
-            print(
-                "fast-speech-2 Tensors are made. Ready to make a response", flush=True
-            )
             # Create InferenceResponse. You can set an error here in case
             # there was a problem with handling this inference request.
             # Below is an example of how you can set errors in inference

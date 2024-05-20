@@ -1,0 +1,7 @@
+numpy
+matplotlib
+torch
+g2p_en
+PyYAML
+Unidecode
+scipy

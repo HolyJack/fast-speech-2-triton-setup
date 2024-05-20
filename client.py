@@ -32,7 +32,7 @@ def send_request(client, text):
 
     start = time.time()
     fast_speech2_ensemble_responce = client.infer(
-        model_name="ensemble_model_english", inputs=[input_text]
+        model_name="00-ensemble-fs2-libritts-hifigan", inputs=[input_text]
     )
     end = time.time()
     print("Time taken:", end - start)

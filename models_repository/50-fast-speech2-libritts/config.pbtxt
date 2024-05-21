@@ -30,7 +30,7 @@ output [
   {
     name: "postnet_output"
     data_type: TYPE_FP32
-    dims: [ 1, -1, -1 ]
+    dims: [ 1, -1, 80 ]
   },
   {
     name: "p_predictions"

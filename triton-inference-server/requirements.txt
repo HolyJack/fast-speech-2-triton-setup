@@ -5,3 +5,4 @@ g2p_en
 PyYAML
 Unidecode
 scipy
+vocos

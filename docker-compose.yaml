@@ -1,6 +1,6 @@
 services: 
   triton-inference-server:
-    build: .
+    build: ./triton-inference-server
     networks:
       - triton-network
     ports:
@@ -9,10 +9,24 @@ services:
       - 8002:8002
     volumes:
       - ./models_repository:/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://triton-inference-server:8000/v2/health/ready"]
+      interval: 200s
+      timeout: 200s
+      retries: 5
   perf-analyzer:
     image: nvcr.io/nvidia/tritonserver:24.04-py3-sdk
     networks:
       - triton-network
     entrypoint: sleep infinity
+  client:
+    build: ./client
+    networks:
+      - triton-network
+    volumes:
+      - ./output:/client/output
+    depends_on:
+      - triton-inference-server
+
 networks:
   triton-network:

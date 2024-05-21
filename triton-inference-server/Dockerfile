@@ -1,6 +1,6 @@
 FROM nvcr.io/nvidia/tritonserver:24.04-pyt-python-py3
 
-ADD ./triton_requirements.txt /requirements.txt
+ADD ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
 
 EXPOSE 8000 8001 8002

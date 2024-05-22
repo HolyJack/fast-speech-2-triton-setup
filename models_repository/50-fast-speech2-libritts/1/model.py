@@ -101,13 +101,21 @@ class TritonPythonModel:
             # Get Inputs
             speakers = torch.from_numpy(
                 pb_utils.get_input_tensor_by_name(request, "speakers").as_numpy()
+            ).to(device)
+            texts = (
+                torch.from_numpy(
+                    pb_utils.get_input_tensor_by_name(request, "texts").as_numpy()
+                )
+                .to(device)
+                .long()
             )
-            texts = torch.from_numpy(
-                pb_utils.get_input_tensor_by_name(request, "texts").as_numpy()
-            ).long()
-            text_lens = torch.from_numpy(
-                pb_utils.get_input_tensor_by_name(request, "text_lens").as_numpy()
-            ).long()
+            text_lens = (
+                torch.from_numpy(
+                    pb_utils.get_input_tensor_by_name(request, "text_lens").as_numpy()
+                )
+                .to(device)
+                .long()
+            )
             max_text_lens = pb_utils.get_input_tensor_by_name(
                 request, "max_text_lens"
             ).as_numpy()[0]

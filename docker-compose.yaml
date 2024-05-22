@@ -18,6 +18,8 @@ services:
     image: nvcr.io/nvidia/tritonserver:24.04-py3-sdk
     networks:
       - triton-network
+    depends_on:
+      - triton-inference-server
     entrypoint: sleep infinity
   client:
     build: ./client
@@ -27,6 +29,5 @@ services:
       - ./output:/client/output
     depends_on:
       - triton-inference-server
-
 networks:
   triton-network:
